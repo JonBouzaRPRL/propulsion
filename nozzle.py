@@ -61,3 +61,31 @@ print(f"Pressure ratio P/Pstag for Mach 1.0: {pressure_ratio:.4f}")
 t = TempRatio(Gamma, 0.0)
 pressure_ratio = PressureRatio(Gamma, t)
 print(f"Pressure ratio P/Pstag for Mach 0.0: {pressure_ratio:.4f}")
+
+def DensityRatio(Gamma, t_Tstag):
+    """
+    Calculate the density ratio for the flow
+
+    Parameters:
+    Gamma (float): Ratio of specific heats (Cp/Cv) for the gas.
+    t_Tstag (float): Temperature ratio T/Tstag for the flow.
+
+    Returns:
+    float: Density ratio rho/rhostag for the flow
+    """
+    if t_Tstag <=0 or t_Tstag > 1:
+        raise ValueError("Temperature ratio must be between 0 and 1 for flow.")
+    
+    rho_rhostag = t_Tstag**(1/(Gamma-1))
+    
+    return rho_rhostag
+
+r = TempRatio(Gamma, 2.0)
+density_ratio = DensityRatio(Gamma, r)
+print(f"Density ratio rho/rhostag for Mach 2.0: {density_ratio:.4f}")
+r = TempRatio(Gamma, 1.0)
+density_ratio = DensityRatio(Gamma, r)
+print(f"Density ratio rho/rhostag for Mach 1.0: {density_ratio:.4f}")
+r = TempRatio(Gamma, 0.0)
+density_ratio = DensityRatio(Gamma, r)
+print(f"Density ratio rho/rhostag for Mach 0.0: {density_ratio:.4f}")
