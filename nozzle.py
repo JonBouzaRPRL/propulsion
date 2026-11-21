@@ -1,3 +1,5 @@
+"""Propulsion analysis functions for nozzle flow"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -7,7 +9,9 @@ Gamma = 1.4
 #Temperature Ratio Function
 def TempRatio(Gamma, MachNum):
     """
-    Calculate the temperature ratio for the flow
+    Calculate the temperature ratio for the flow utilizing the following equation:
+
+    T/Tstag = 1 / (1 + ((Gamma - 1) / 2) * MachNum^2)
 
     Parameters:
     Gamma (float): Ratio of specific heats (Cp/Cv) for the gas.
@@ -36,7 +40,8 @@ print(f"Temperature ratio T/Tstag for Mach 0.0: {t_RatioM0:.4f}")
 
 def PressureRatio(Gamma, t_Tstag):
     """
-    Calculate the pressure ratio for the flow
+    Calculate the pressure ratio for the flow utilizing the following equation:
+    P/Pstag = (T/Tstag)^(Gamma/(Gamma-1))
 
     Parameters:
     Gamma (float): Ratio of specific heats (Cp/Cv) for the gas.
@@ -64,7 +69,8 @@ print(f"Pressure ratio P/Pstag for Mach 0.0: {pressure_ratio:.4f}")
 
 def DensityRatio(Gamma, t_Tstag):
     """
-    Calculate the density ratio for the flow
+    Calculate the density ratio for the flow utilizing the following equation:
+    rho/rhostag = (T/Tstag)^(1/(Gamma-1))
 
     Parameters:
     Gamma (float): Ratio of specific heats (Cp/Cv) for the gas.
