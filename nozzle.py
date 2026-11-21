@@ -1,4 +1,5 @@
-"""Propulsion analysis functions for nozzle flow"""
+"""Propulsion analysis functions for nozzle flow. In this calculator we assume the flow is isentropic and the working fluid is air. 
+The functions calculate the temperature, pressure, and density ratios for a given Mach number using the isentropic flow relations."""
 
 import numpy as np
 import matplotlib.pyplot as plt
