@@ -41,11 +41,11 @@ def PressureRatio(Gamma, t_Tstag):
     Parameters:
     Gamma (float): Ratio of specific heats (Cp/Cv) for the gas.
     t_Tstag (float): Temperature ratio T/Tstag for the flow.
-    
+
     Returns:
     float: Pressure ratio P/Pstag for the flow
     """
-    if t_Tstag <=0 or t_Tstag >= 1:
+    if t_Tstag <=0 or t_Tstag > 1:
         raise ValueError("Temperature ratio must be between 0 and 1 for flow.")
     
     P_Pstag = t_Tstag**(Gamma/(Gamma-1))
@@ -53,6 +53,11 @@ def PressureRatio(Gamma, t_Tstag):
     return P_Pstag
 
 t = TempRatio(Gamma, 2.0)
-
 pressure_ratio = PressureRatio(Gamma, t)
 print(f"Pressure ratio P/Pstag for Mach 2.0: {pressure_ratio:.4f}")
+t = TempRatio(Gamma, 1.0)
+pressure_ratio = PressureRatio(Gamma, t)
+print(f"Pressure ratio P/Pstag for Mach 1.0: {pressure_ratio:.4f}")
+t = TempRatio(Gamma, 0.0)
+pressure_ratio = PressureRatio(Gamma, t)
+print(f"Pressure ratio P/Pstag for Mach 0.0: {pressure_ratio:.4f}")
