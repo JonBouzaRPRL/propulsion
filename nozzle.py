@@ -116,3 +116,16 @@ print(f"Total validation checks passed: {validation_checks} out of {3*len(M_Know
 TempRatios = TempRatio(Gamma, mach_Range)
 PressureRatios = PressureRatio(Gamma, TempRatios)
 DensityRatios = DensityRatio(Gamma, TempRatios)
+
+
+plt.figure(figsize=(12, 8))
+plt.title('Isentropic Flow Ratios vs Mach Number')
+plt.xlabel('Mach Number')
+plt.ylabel('Isentropic Flow Ratio')
+plt.plot(mach_Range, TempRatios, label='Temperature Ratio T/Tstag', color='blue')
+plt.plot(mach_Range, PressureRatios, label='Pressure Ratio P/Pstag', color='orange')
+plt.plot(mach_Range, DensityRatios, label='Density Ratio rho/rhostag', color='green')
+plt.legend()
+plt.grid(True)
+plt.savefig('isentropic_flow_ratios.png')
+plt.show()
