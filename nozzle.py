@@ -13,7 +13,6 @@ we assume steady state and 1D flow.
 
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 
 Gamma = 1.4 # assuming air as the working fluid, the ratio of specific heats (Cp/Cv) is approximately 1.4 for diatomic gases like air at standard conditions.
 
@@ -21,6 +20,8 @@ M_Known = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0] # Mach numbers for which
 T_TstagExpecteds= [1.0000, 0.9524, 0.8333, 0.6897, 0.5556, 0.4444, 0.3571, 0.2381, 0.1667] # Temperature ratios for the corresponding Mach numbers
 P_PstagExpecteds = [1.0000, 0.8430, 0.5283, 0.2724, 0.1278, 0.05853, 0.02722, 0.006586, 0.001890] # Pressure ratios for the corresponding Mach numbers
 rho_rhostagExpecteds = [1.0000, 0.8852, 0.6339, 0.3950, 0.2300, 0.1317, 0.07623, 0.02766, 0.01134]  # Density Ratios of corresponding mach numbers
+
+mach_Range = np.linspace(0, 5, 200) # mach number range for plotting ratios
 
 def TempRatio(Gamma, MachNum):
     """
@@ -35,7 +36,7 @@ def TempRatio(Gamma, MachNum):
     Returns:
     float: Temperature ratio T/Tstag for the flow
     """
-    if MachNum < 0:
+    if np.any(MachNum < 0):
         raise ValueError("Mach number must be 0 or higher for flow.")
     
     T_Tstag = 1/((1+((Gamma-1)/2)*MachNum**2))
@@ -56,7 +57,7 @@ def PressureRatio(Gamma, t_Tstag):
     Returns:
     float: Pressure ratio P/Pstag for the flow
     """
-    if t_Tstag <=0 or t_Tstag > 1:
+    if np.any(t_Tstag <=0) or np.any(t_Tstag > 1):
         raise ValueError("Temperature ratio must be between 0 and 1 for flow.")
     
     P_Pstag = t_Tstag**(Gamma/(Gamma-1))
@@ -75,7 +76,7 @@ def DensityRatio(Gamma, t_Tstag):
     Returns:
     float: Density ratio rho/rhostag for the flow
     """
-    if t_Tstag <=0 or t_Tstag > 1:
+    if np.any(t_Tstag <=0) or np.any(t_Tstag > 1):
         raise ValueError("Temperature ratio must be between 0 and 1 for flow.")
     
     rho_rhostag = t_Tstag**(1/(Gamma-1))
@@ -111,3 +112,7 @@ for i in range(len(M_Known)):
     if check(f"Density ratio for Mach {M_Known[i]}", rho_ratio, rho_rhostagExpecteds[i]):
         validation_checks += 1
 print(f"Total validation checks passed: {validation_checks} out of {3*len(M_Known)}")
+
+TempRatios = TempRatio(Gamma, mach_Range)
+PressureRatios = PressureRatio(Gamma, TempRatios)
+DensityRatios = DensityRatio(Gamma, TempRatios)
