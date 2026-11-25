@@ -27,6 +27,7 @@ mach_Range = np.linspace(0, 5, 200) # mach number range for plotting ratios
 areaMach_Range = np.linspace(0.1, 4, 200) # mach number range for plotting area ratio
 
 subsonic_mach_range = [0.1, 0.3, 0.5, 0.7, 0.9] # subsonic mach number range for plotting ratios
+supersonic_mach_range = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # supersonic mach number range for plotting ratios
 
 def TempRatio(Gamma, MachNum):
     """
@@ -124,7 +125,7 @@ def area_Ratio(Gamma, MachNum):
     return area_ratio
 
 
-def MRootFinder(Gamma, target_area_ratio):
+def MRootFinder(Gamma, target_area_ratio, supersonic=False):
     """Finds mach number for given target area ratio using brentq root finding method:
     
     Parameters:
@@ -134,10 +135,12 @@ def MRootFinder(Gamma, target_area_ratio):
     A/A* (float): The area ratio A/A* for the flow.
         A = Cross Sectional Area of point of interest
         A* = Cross sectional area of throat
+    Supersonic (bool) default False: If True, find the supersonic Mach number (M>=1). If False, find the subsonic Mach number (0<M<=1).
 
     returns:
-    Mach Number (float): The Subsonic (0<M<1) Mach number corresponding to the given target area ratio.
-    
+    Mach Number (float): 
+        If Supersonic False: The Subsonic (0<M<=1) Mach number corresponding to the given target area ratio. 
+        If Supersonic True: The Supersonic (M>=1) Mach number corresponding to the given target area ratio.
     Raises:
     Value Error if A/A* < 1
     """
@@ -146,17 +149,23 @@ def MRootFinder(Gamma, target_area_ratio):
     
     if target_area_ratio < 1:
         raise ValueError("Target area ratio must be at least 1 for subsonic flow.")
-    
-    # Find the Mach number using brentq root finding method
-    mach_number = bq(area_ratio_func, 1e-6, 1, args=(target_area_ratio,))
+
+    if supersonic == True:
+        mach_number = bq(area_ratio_func, 1, 50, args=(target_area_ratio,))
+    else:
+        # Find the Mach number using brentq root finding method
+        mach_number = bq(area_ratio_func, 1e-6, 1, args=(target_area_ratio,))
 
     return mach_number  
 
-print(f"Mach number for area ratio 1.3398: {MRootFinder(Gamma, 1.3398):.6f}")  # Example usage of MRootFinderr (ffunction)
+print(f"Mach number for area ratio 1.3398: {MRootFinder(Gamma, 1.3398):.6f}")  # Example usage of MRootFinderr (function)
+print(f"Mach number for area ratio 1.6875: {MRootFinder(Gamma, 1.6875, supersonic=True):.6f}")  # Example usage of MRootFinderr (function)
+
 
 validation_checks = 0
 validation_checks_Area = 0
-validation_checks_Mach = 0
+validation_checks_SubMach = 0
+validation_checks_SupersonicMach = 0
 
 if len(M_Known) != len(T_TstagExpecteds) or len(M_Known) != len(P_PstagExpecteds) or len(M_Known) != len(rho_rhostagExpecteds):
     raise ValueError("The lengths of the Mach number list and expected lists must be the same")
@@ -186,13 +195,21 @@ for i in range(len(subsonic_mach_range)):
     forward_ratio = area_Ratio(Gamma, start_mach) # computes area ratio per pass from subsonic machs above
     back_mach = MRootFinder(Gamma, forward_ratio) # A/A* ratio then fed back in to validate mach number
     if check(f"Round trip Mach {start_mach}", back_mach, start_mach, tolerance=1e-6):
-        validation_checks_Mach += 1
+        validation_checks_SubMach += 1
 if check(f"Mach for area ratio {area_RatioExpecteds[0]}", MRootFinder(Gamma, area_RatioExpecteds[0]), area_Mach[0], tolerance=1e-3):
-    validation_checks_Mach += 1
+    validation_checks_SubMach += 1
 if check(f"Mach for area ratio {area_RatioExpecteds[1]}", MRootFinder(Gamma, area_RatioExpecteds[1]), area_Mach[1], tolerance=1e-6):
-    validation_checks_Mach += 1
+    validation_checks_SubMach += 1
 
-print(f"Total Mach number validation checks passed: {validation_checks_Mach} out of {2 + len(subsonic_mach_range)}")
+for i in range(len(supersonic_mach_range)):
+    start_mach = supersonic_mach_range[i] # Passes supersonic mach list to variable
+    forward_ratio = area_Ratio(Gamma, start_mach) # computes area ratio per pass from supersonic machs above
+    back_mach = MRootFinder(Gamma, forward_ratio, supersonic=True) # A/A* ratio then fed back in to validate mach number
+    if check(f"Round trip Mach {start_mach}", back_mach, start_mach, tolerance=1e-6):
+        validation_checks_SupersonicMach += 1
+
+print(f"Total Subsonic Mach number validation checks passed: {validation_checks_SubMach} out of {2 + len(subsonic_mach_range)}")
+print(f"Total Supersonic Mach number validation checks passed: {validation_checks_SupersonicMach} out of {len(supersonic_mach_range)}")
 
 TempRatios = TempRatio(Gamma, mach_Range)
 PressureRatios = PressureRatio(Gamma, TempRatios)
