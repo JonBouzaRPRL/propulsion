@@ -274,6 +274,13 @@ print(f"Diverging Nozzle Max Radius: {nozzRad[-1]:.7f}")
 check("Nozzle Throat Radius", nozzRad.min(), r_t, tolerance=1e-6)
 print(f"Nozzle Throat Radius: {nozzRad.min():.7f}")
 
+aC_aT = nozzRad[0]**2 / nozzRad.min()**2
+check("Converging Throat Area Ratio", aC_aT, 4, tolerance=1e-6)
+print(f"Constructed Nozzle Area Conv Throat Ratio: {aC_aT:.7f}")
+aD_aT = nozzRad[-1]**2 / nozzRad.min()**2
+check("Diverging Throat Area Ratio", aD_aT, 10, tolerance=1e-6)
+print(f"Constructed Nozzle Area Diverge Throat Ratio: {aD_aT:.7f}")
+
 # step 5 plot: isentropic flow ratios
 plt.figure(figsize=(12, 8))
 plt.title('Isentropic Flow Ratios vs Mach Number')
