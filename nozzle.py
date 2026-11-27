@@ -36,7 +36,7 @@ supersonic_mach_range = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # supersonic mach number 
 #step 9 nozzle construction parameters
 
 r_t = 0.025 # throat radius in meters
-CR = 4 # construction ratio Inlet Area / Throat Area
+CR = 4 # contraction ratio Inlet Area / Throat Area
 eps = 10 # expansion ratio Exit Area / Throat Area
 theta_c = np.radians(30) # converging half angle in degrees converted to radians
 theta_d = np.radians(15) # divergence half angle in degrees converted to radians
@@ -248,6 +248,20 @@ r_exit = r_t * np.sqrt(eps) # radius exit
 Ld = (r_exit - r_t) / np.tan(theta_d) # 
 
 def nozzle(r_t, CR, eps, theta_c, theta_d):
+    """nozzle construction formula
+    
+    Parameters:
+    r_t (float): nozzle throat radius (m)
+    CR (float): Contraction Ratio. Ratio of Inlet Area and Throat Area.
+    eps (float): epsilon, expansion ratio of the nozzle, the area of the exit divided by the throat.
+    theta_c (float): converging section half angle in radians.
+    theta_d (float): diverging section half angle in radians.
+    
+    Returns:
+    x (numpy array): length position through the axis (m).
+    r (numpy array): radius as a function of x (m).
+    """
+
     r_inlet = r_t * np.sqrt(CR) # radius inlet
     Lc = (r_inlet - r_t)/ np.tan(theta_c) # length of converging section
 
@@ -302,6 +316,18 @@ plt.plot(areaMach_Range, area_ratios, label='Area Ratio A/A*', color='purple')
 plt.legend()
 plt.grid(True)
 plt.savefig('area_ratio.png')
+
+#Step 9.4 plotting the nozzle
+plt.figure(figsize=(12, 8))
+plt.title('Nozzle Geometry as a function of length')
+plt.xlabel('Position in nozzle (m)')
+plt.ylabel('Radius at point (m)')
+plt.plot(lengthx, nozzRad, label='Top Wall', color = 'black')
+plt.plot(lengthx, -nozzRad, label='Bottom Wall', color = 'black')
+plt.axis('equal')
+plt.legend()
+plt.grid(True)
+plt.savefig('nozzle_geometry.png')
 
 # keep plt.show() last: it pauses the script until the plot windows are closed
 plt.show()
