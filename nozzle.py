@@ -16,19 +16,32 @@ import matplotlib.pyplot as plt
 from scipy.optimize import brentq as bq
 
 
+# step 1-4 inputs: gamma and known values for the T/Tstag, P/Pstag, rho/rhostag checks
 Gamma = 1.4 # assuming air as the working fluid, the ratio of specific heats (Cp/Cv) is approximately 1.4 for diatomic gases like air at standard conditions.
 M_Known = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0] # Mach numbers for which we want to calculate the ratios
 T_TstagExpecteds= [1.0000, 0.9524, 0.8333, 0.6897, 0.5556, 0.4444, 0.3571, 0.2381, 0.1667] # Temperature ratios for the corresponding Mach numbers
 P_PstagExpecteds = [1.0000, 0.8430, 0.5283, 0.2724, 0.1278, 0.05853, 0.02722, 0.006586, 0.001890] # Pressure ratios for the corresponding Mach numbers
 rho_rhostagExpecteds = [1.0000, 0.8852, 0.6339, 0.3950, 0.2300, 0.1317, 0.07623, 0.02766, 0.01134]  # Density Ratios of corresponding mach numbers
+# step 6 inputs: known A/A* values and their Mach numbers
 area_RatioExpecteds = [1.3398, 1.000, 1.1762, 1.6875, 2.6367, 4.2346, 10.7188] # Area ratios for the corresponding Mach numbers
 area_Mach = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # Mach numbers for which we want to calculate the area ratios
+# plot ranges: mach_Range is step 5, areaMach_Range is step 6
 mach_Range = np.linspace(0, 5, 200) # mach number range for plotting ratios
 areaMach_Range = np.linspace(0.1, 4, 200) # mach number range for plotting area ratio
 
+# step 7 (subsonic) and step 8 (supersonic) round trip test Mach numbers
 subsonic_mach_range = [0.1, 0.3, 0.5, 0.7, 0.9] # subsonic mach number test range 
 supersonic_mach_range = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # supersonic mach number test range 
 
+#step 9 nozzle construction parameters
+
+r_t = 0.025 # throat radius in meters
+CR = 4 # construction ratio Inlet Area / Throat Area
+eps = 10 # expansion ratio Exit Area / Throat Area
+theta_c = np.radians(30) # converging half angle in degrees converted to radians
+theta_d = np.radians(15) # divergence half angle in degrees converted to radians
+
+# step 1: temperature ratio function (docstrings added in step 3, np.any for arrays added in step 5)
 def TempRatio(Gamma, MachNum):
     """
     Calculate the temperature ratio for the flow utilizing the following equation:
@@ -49,7 +62,7 @@ def TempRatio(Gamma, MachNum):
     
     return T_Tstag
 
-# Pressure ratio function
+# step 2: pressure and density ratio functions
 
 def PressureRatio(Gamma, t_Tstag):
     """
@@ -89,6 +102,7 @@ def DensityRatio(Gamma, t_Tstag):
     
     return rho_rhostag
 
+# step 4: PASS/FAIL check helper
 def check(label, computed, expected, tolerance=1e-4):
     """validation check computations for known values of ratios.
     
@@ -103,6 +117,7 @@ def check(label, computed, expected, tolerance=1e-4):
     return True
 
 
+# step 6: area ratio A/A* vs Mach number
 def area_Ratio(Gamma, MachNum):
     """
     Calculate the nozzle area and throat arearatio for the flow utilizing the following equation:
@@ -125,6 +140,7 @@ def area_Ratio(Gamma, MachNum):
     return area_ratio
 
 
+# step 7: Mach number from A/A* with brentq (subsonic); step 8 added the supersonic flag
 def MRootFinder(Gamma, target_area_ratio, supersonic=False):
     """Finds mach number for given target area ratio using brentq root finding method:
     
@@ -156,17 +172,20 @@ def MRootFinder(Gamma, target_area_ratio, supersonic=False):
         # Find the Mach number using brentq root finding method
         mach_number = bq(area_ratio_func, 1e-6, 1, args=(target_area_ratio,))
 
-    return mach_number  
+    return mach_number
 
+# step 7 and step 8 example usage
 print(f"Mach number for area ratio 1.3398: {MRootFinder(Gamma, 1.3398):.6f}")  # Example usage of MRootFinder (function)
 print(f"Mach number for area ratio 1.6875: {MRootFinder(Gamma, 1.6875, supersonic=True):.6f}")  # Example usage of MRootFinder (function)
 
 
+# validation counters: step 4, step 6, step 7, step 8 (in that order)
 validation_checks = 0
 validation_checks_Area = 0
 validation_checks_SubMach = 0
 validation_checks_SupersonicMach = 0
 
+# step 4: T, P, rho ratio checks against known values
 if len(M_Known) != len(T_TstagExpecteds) or len(M_Known) != len(P_PstagExpecteds) or len(M_Known) != len(rho_rhostagExpecteds):
     raise ValueError("The lengths of the Mach number list and expected lists must be the same")
 for i in range(len(M_Known)):
@@ -182,6 +201,7 @@ for i in range(len(M_Known)):
         validation_checks += 1
 print(f"Total validation checks passed: {validation_checks} out of {3*len(M_Known)}")
 
+# step 6: area ratio checks against known values
 if len(area_Mach) != len(area_RatioExpecteds):
     raise ValueError("The lengths of the area Mach number list and expected area ratio list must be the same")
 for i in range(len(area_RatioExpecteds)):
@@ -190,6 +210,7 @@ for i in range(len(area_RatioExpecteds)):
         validation_checks_Area += 1
 print(f"Total area ratio validation checks passed: {validation_checks_Area} out of {len(area_RatioExpecteds)}")
 
+# step 7: subsonic round trip checks and known value checks
 for i in range(len(subsonic_mach_range)):
     start_mach = subsonic_mach_range[i] # Passes subsonic mach list to variable
     forward_ratio = area_Ratio(Gamma, start_mach) # computes area ratio per pass from subsonic machs above
@@ -201,6 +222,7 @@ if check(f"Mach for area ratio {area_RatioExpecteds[0]}", MRootFinder(Gamma, are
 if check(f"Mach for area ratio {area_RatioExpecteds[1]}", MRootFinder(Gamma, area_RatioExpecteds[1]), area_Mach[1], tolerance=1e-6):
     validation_checks_SubMach += 1
 
+# step 8: supersonic round trip checks
 for i in range(len(supersonic_mach_range)):
     start_mach = supersonic_mach_range[i] # Passes supersonic mach list to variable
     forward_ratio = area_Ratio(Gamma, start_mach) # computes area ratio per pass from supersonic machs above
@@ -211,11 +233,25 @@ for i in range(len(supersonic_mach_range)):
 print(f"Total Subsonic Mach number validation checks passed: {validation_checks_SubMach} out of {2 + len(subsonic_mach_range)}")
 print(f"Total Supersonic Mach number validation checks passed: {validation_checks_SupersonicMach} out of {len(supersonic_mach_range)}")
 
+# step 5 (T, P, rho) and step 6 (A/A*): arrays over the Mach ranges for plotting
 TempRatios = TempRatio(Gamma, mach_Range)
 PressureRatios = PressureRatio(Gamma, TempRatios)
 DensityRatios = DensityRatio(Gamma, TempRatios)
 area_ratios = area_Ratio(Gamma, areaMach_Range)
 
+# step 9 nozzle construction
+
+r_inlet = r_t * np.sqrt(CR) # radius inlet
+Lc = (r_inlet - r_t)/ np.tan(theta_c)
+
+r_exit = r_t * np.sqrt(eps) # radius exit
+Ld = (r_exit - r_t) / np.tan(theta_d) # 
+
+check("Lc value", Lc, 0.0433013, tolerance=1e-6)
+
+check("Ld Value", Ld, 0.2017433, tolerance=1e-6)
+
+# step 5 plot: isentropic flow ratios
 plt.figure(figsize=(12, 8))
 plt.title('Isentropic Flow Ratios vs Mach Number')
 plt.xlabel('Mach Number')
@@ -227,6 +263,7 @@ plt.legend()
 plt.grid(True)
 plt.savefig('isentropic_flow_ratios.png')
 
+# step 6 plot: area ratio
 plt.figure(figsize=(12, 8))
 plt.title('Area Ratio vs Mach Number')
 plt.xlabel('Mach Number')
@@ -235,4 +272,6 @@ plt.plot(areaMach_Range, area_ratios, label='Area Ratio A/A*', color='purple')
 plt.legend()
 plt.grid(True)
 plt.savefig('area_ratio.png')
+
+# keep plt.show() last: it pauses the script until the plot windows are closed
 plt.show()
