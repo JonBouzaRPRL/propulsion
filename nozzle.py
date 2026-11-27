@@ -104,7 +104,7 @@ def DensityRatio(Gamma, t_Tstag):
 
 # step 4: PASS/FAIL check helper
 def check(label, computed, expected, tolerance=1e-4):
-    """validation check computations for known values of ratios.
+    """validation check computations for known values.
     
     Parameters: 
     Label (str) for the check
@@ -247,9 +247,32 @@ Lc = (r_inlet - r_t)/ np.tan(theta_c)
 r_exit = r_t * np.sqrt(eps) # radius exit
 Ld = (r_exit - r_t) / np.tan(theta_d) # 
 
-check("Lc value", Lc, 0.0433013, tolerance=1e-6)
+def nozzle(r_t, CR, eps, theta_c, theta_d):
+    r_inlet = r_t * np.sqrt(CR) # radius inlet
+    Lc = (r_inlet - r_t)/ np.tan(theta_c) # length of converging section
 
+    r_exit = r_t * np.sqrt(eps) # radius exit
+    Ld = (r_exit - r_t) / np.tan(theta_d) # length of divergin section
+
+    xC = np.linspace(-Lc, 0, 250, endpoint=False)
+    xD = np.linspace(0, Ld, 250)
+    x = np.concatenate((xC, xD))
+    r = np.where(x < 0, r_t + np.tan(theta_c)*(-x), r_t + np.tan(theta_d)*(x))  
+    return x, r 
+
+check("Lc value", Lc, 0.0433013, tolerance=1e-6)
+print(f"Lc value: {Lc:.7f}")
 check("Ld Value", Ld, 0.2017433, tolerance=1e-6)
+print(f"Ld Value: {Ld:.7f}")
+
+lengthx, nozzRad = nozzle(r_t, CR, eps, theta_c, theta_d)
+
+check("Converging Nozzle Max Radius", nozzRad[0], 0.05, tolerance=1e-6)
+print(f"Converging Nozzle Max Radius: {nozzRad[0]:.7f}")
+check("Diverging Nozzle Max Radius", nozzRad[-1], 0.0790569, tolerance=1e-6)
+print(f"Diverging Nozzle Max Radius: {nozzRad[-1]:.7f}")
+check("Nozzle Throat Radius", nozzRad.min(), r_t, tolerance=1e-6)
+print(f"Nozzle Throat Radius: {nozzRad.min():.7f}")
 
 # step 5 plot: isentropic flow ratios
 plt.figure(figsize=(12, 8))
