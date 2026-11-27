@@ -26,8 +26,8 @@ area_Mach = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # Mach numbers for which we want
 mach_Range = np.linspace(0, 5, 200) # mach number range for plotting ratios
 areaMach_Range = np.linspace(0.1, 4, 200) # mach number range for plotting area ratio
 
-subsonic_mach_range = [0.1, 0.3, 0.5, 0.7, 0.9] # subsonic mach number range for plotting ratios
-supersonic_mach_range = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # supersonic mach number range for plotting ratios
+subsonic_mach_range = [0.1, 0.3, 0.5, 0.7, 0.9] # subsonic mach number test range 
+supersonic_mach_range = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0] # supersonic mach number test range 
 
 def TempRatio(Gamma, MachNum):
     """
@@ -142,7 +142,7 @@ def MRootFinder(Gamma, target_area_ratio, supersonic=False):
         If Supersonic False: The Subsonic (0<M<=1) Mach number corresponding to the given target area ratio. 
         If Supersonic True: The Supersonic (M>=1) Mach number corresponding to the given target area ratio.
     Raises:
-    Value Error if A/A* < 1
+    ValueError if A/A* < 1
     """
     def area_ratio_func(MachNum, target_area_ratio):
         return area_Ratio(Gamma, MachNum) - target_area_ratio
@@ -150,7 +150,7 @@ def MRootFinder(Gamma, target_area_ratio, supersonic=False):
     if target_area_ratio < 1:
         raise ValueError("Target area ratio must be at least 1 for subsonic flow.")
 
-    if supersonic == True:
+    if supersonic:
         mach_number = bq(area_ratio_func, 1, 50, args=(target_area_ratio,))
     else:
         # Find the Mach number using brentq root finding method
@@ -158,8 +158,8 @@ def MRootFinder(Gamma, target_area_ratio, supersonic=False):
 
     return mach_number  
 
-print(f"Mach number for area ratio 1.3398: {MRootFinder(Gamma, 1.3398):.6f}")  # Example usage of MRootFinderr (function)
-print(f"Mach number for area ratio 1.6875: {MRootFinder(Gamma, 1.6875, supersonic=True):.6f}")  # Example usage of MRootFinderr (function)
+print(f"Mach number for area ratio 1.3398: {MRootFinder(Gamma, 1.3398):.6f}")  # Example usage of MRootFinder (function)
+print(f"Mach number for area ratio 1.6875: {MRootFinder(Gamma, 1.6875, supersonic=True):.6f}")  # Example usage of MRootFinder (function)
 
 
 validation_checks = 0
