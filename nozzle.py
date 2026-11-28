@@ -307,7 +307,7 @@ for i in range(len(ar)):
     else:
         Mach[i] = MRootFinder(Gamma, ar[i], supersonic=True)
 
-print(f"Mach array is: {Mach}")
+# print(f"Mach array is: {Mach}")
 print("initial Mach: ", Mach[0], "Mid Mach: ", Mach[250],"Exhaust Mach :", Mach[-1])
 
 # added ratios not needed for spec so commenting out area and density.
@@ -319,9 +319,9 @@ P_PstagMach = PressureRatio(Gamma, T_TstagMach)
 
 
 # print(f"Area Ratio at each point along axis: {areaRatMach}")
-print(f"Temperature Ratio at each point along axis: {T_TstagMach}")
+# print(f"Temperature Ratio at each point along axis: {T_TstagMach}")
 # print(f"Density Ratio at each point along axis: {rho_rhostagMach}")
-print(f"Pressure ratio at each point along axis: {P_PstagMach}")
+# print(f"Pressure ratio at each point along axis: {P_PstagMach}")
 
 print("Inlet Temp: ", T_TstagMach[0], "Throat Temp: ", T_TstagMach[250], "Exhaust Temp: ", T_TstagMach[-1])
 print("Inlet Pressure: ", P_PstagMach[0], "Throat Pressure: ", P_PstagMach[250], "Exhaust Pressure: ", P_PstagMach[-1])
