@@ -295,6 +295,60 @@ aD_aT = nozzRad[-1]**2 / nozzRad.min()**2
 check("Diverging Throat Area Ratio", aD_aT, 10, tolerance=1e-6)
 print(f"Constructed Nozzle Area Diverge Throat Ratio: {aD_aT:.7f}")
 
+# STEP 10, Mach Iteration through nozzle
+
+ar = nozzRad**2 / r_t**2
+# print(ar) # just printing to make sure the array works feel free to comment out 
+Mach = np.zeros_like(ar)
+
+for i in range(len(ar)):
+    if lengthx[i] < 0:
+        Mach[i] = MRootFinder(Gamma, ar[i], supersonic=False)
+    else:
+        Mach[i] = MRootFinder(Gamma, ar[i], supersonic=True)
+
+print(f"Mach array is: {Mach}")
+print("initial Mach: ", Mach[0], "Mid Mach: ", Mach[250],"Exhaust Mach :", Mach[-1])
+
+# added ratios not needed for spec so commenting out area and density.
+
+# areaRatMach = area_Ratio(Gamma, Mach)
+T_TstagMach = TempRatio(Gamma, Mach)
+# rho_rhostagMach = DensityRatio(Gamma, T_TstagMach)
+P_PstagMach = PressureRatio(Gamma, T_TstagMach)
+
+
+# print(f"Area Ratio at each point along axis: {areaRatMach}")
+print(f"Temperature Ratio at each point along axis: {T_TstagMach}")
+# print(f"Density Ratio at each point along axis: {rho_rhostagMach}")
+print(f"Pressure ratio at each point along axis: {P_PstagMach}")
+
+print("Inlet Temp: ", T_TstagMach[0], "Throat Temp: ", T_TstagMach[250], "Exhaust Temp: ", T_TstagMach[-1])
+print("Inlet Pressure: ", P_PstagMach[0], "Throat Pressure: ", P_PstagMach[250], "Exhaust Pressure: ", P_PstagMach[-1])
+
+check("Inlet Temp", T_TstagMach[0], 0.995723, tolerance=1e-6)
+check("Throat Temp", T_TstagMach[250], 0.833333, tolerance=1e-6)
+check("Exhaust Temp", T_TstagMach[-1], 0.245261, tolerance=1e-6)
+check("Inlet Pressure", P_PstagMach[0], 0.985111, tolerance=1e-6)
+check("Throat Pressure", P_PstagMach[250], 0.528282, tolerance=1e-6)
+check("Exhaust Pressure", P_PstagMach[-1], 0.007306, tolerance=1e-6)
+check("Inlet Mach", Mach[0], 0.146548, tolerance=1e-6)
+check("Throat Mach", Mach[250], 1.000000, tolerance=1e-6)
+check("Exhaust Mach", Mach[-1], 3.922552, tolerance=1e-6)
+
+testareasub = MRootFinder(Gamma, 2.0)
+testareasuper = MRootFinder(Gamma, 2.0, supersonic=True)
+check("Test Area Subsonic", testareasub, 0.305904, tolerance=1e-4)
+check("Test Area Supersonic", testareasuper, 2.197198, tolerance=1e-4)
+
+# derivative test to make sure mach is always increasing along the nozzle
+
+if np.all(np.diff(Mach) > 0):
+    print("All Machs increase: PASS")
+else:
+    print("Mach Stall detected: FAIL")
+
+
 # step 5 plot: isentropic flow ratios
 plt.figure(figsize=(12, 8))
 plt.title('Isentropic Flow Ratios vs Mach Number')
@@ -328,6 +382,21 @@ plt.axis('equal')
 plt.legend()
 plt.grid(True)
 plt.savefig('nozzle_geometry.png')
+
+#Step 10 plotting the mach flow
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(12,8))
+fig.suptitle('Mach Number, Temp and Pressure Ratio as function of position in nozzle')
+ax3.set_xlabel('Position in Nozzle (m)')
+ax1.set_ylabel('Mach Number')
+ax1.grid(True)
+ax1.plot(lengthx, Mach)
+ax2.set_ylabel('Temp Ratio')
+ax2.grid(True)
+ax2.plot(lengthx, T_TstagMach)
+ax3.set_ylabel('Pressure Ratio')
+ax3.grid(True)
+ax3.plot(lengthx, P_PstagMach)
+plt.savefig('nozzle_flow.png')
 
 # keep plt.show() last: it pauses the script until the plot windows are closed
 plt.show()
